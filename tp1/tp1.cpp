@@ -113,6 +113,24 @@ void saut(reel t, point& PO)
 
 void inter_lin(reel t_norm, point&  PO, vecteur& VN) // à compléter
 {
+	//Nombre de segment dans la courbe
+	int nbSeg = (PointsControle.size() - 1);
+	//Numero du segment actuel
+	int i = t_norm * nbSeg;
+	//Le temps ajuste de 0 a 1 pour chaque segment
+	reel t = (t_norm - (reel(i) / reel(nbSeg))) * nbSeg;
+
+	if (t == 1) {
+		return;
+	}
+
+	point PC0 = PointsControle[i];
+	point PC1 = PointsControle[i+1];
+
+	vecteur V = PC1 - PC0;
+
+	PO = PC0 + t * V;
+	VN = V;
 }
 
 void cat_rom(reel t_norm, point&  PO, vecteur& VN) // à compléter
