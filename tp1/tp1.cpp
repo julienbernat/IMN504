@@ -117,6 +117,59 @@ void inter_lin(reel t_norm, point&  PO, vecteur& VN) // à compléter
 
 void cat_rom(reel t_norm, point&  PO, vecteur& VN) // à compléter
 {
+	//Points
+	point prev;
+	point PC0;
+	point PC1;
+	point PC2;
+	//Tangeantes
+	vecteur M0;
+	vecteur M1;
+
+	//Nombre de segment dans la courbe
+	int nbSeg = (PointsControle.size() - 1);
+	//Numero du segment actuel
+	int i = t_norm * nbSeg;
+	//Le temps ajuste de 0 a 1 pour chaque segment
+	reel t = (t_norm-(reel(i) / reel(nbSeg)))* nbSeg;
+
+	if (i == 0) {
+		//Premier segment de la courbe
+		PC0 = PointsControle[i];
+		PC1 = PointsControle[i + 1];
+		PC2 = PointsControle[i + 2];
+
+		M0 = VN;
+		M1 = 0.5 * (PC2 - PC1);
+	}
+	else if (i == PointsControle.size() - 2) {
+		//Dernier segment de la courbe 
+		//Si le t est 1 on ne fait pas le calcul pour ne pas repeter le dernier/premier frame
+		if (t < 1) {
+			prev = PointsControle[i - 1];
+			PC0 = PointsControle[i];
+			PC1 = PointsControle[i + 1];
+			M0 = 0.5 * (PC1 - prev);
+			//Calcul de la derniere tangeante
+			M1 = 0.5 * (PC0 - (prev - PC0) - PC1);
+		}
+	}
+	else if(i != PointsControle.size()) {
+		//Cas normal
+		prev = PointsControle[i-1];
+		PC0 = PointsControle[i];
+		PC1 = PointsControle[i + 1];
+		PC2 = PointsControle[i + 2];
+		
+		M0 = 0.5 * (PC1 - prev);
+		M1 = 0.5 * (PC2 - PC1);
+	}
+
+	reel t3 = pow(t, 3);
+	reel t2 = pow(t, 2);
+
+	//Calcul du point voir page wiki Cubic Hermit spline
+	PO = (2 * t3 - 3 * t2 + 1) * PC0 + (t3 - 2 * t2 + t) * M0 + (-2 * t3 + 3 * t2) * PC1 + (t3 - t2) * M1;
 }
 
 
