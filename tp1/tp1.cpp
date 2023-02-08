@@ -4,8 +4,8 @@
 
 /**********************  TP1 *************************************************/
 /*                                                                           */
-/*  NOM 1 :                                                                  */
-/*  MATRICULE 1:															 */
+/*  NOM 1 :  Julien Bernat                                                   */
+/*  MATRICULE 1: 19096032	     					     */
 /*                                                                           */
 /*  NOM 2 :                                                                  */
 /*  MATRICULE 2:                                                             */
@@ -67,9 +67,9 @@ void timer(int value)
 	if (t >= t_cycle)  // le temps est remis a zero lorqu'il atteint la fin du cycle
 		t=0;
 
-	t_norm = double(t) / double(t_cycle); // temps normalisé (voir la declaration de t_norm)
+	t_norm = double(t) / double(t_cycle); // temps normalisÃ© (voir la declaration de t_norm)
 
-	glutPostRedisplay(); // la procedure d'affichage "display" est appelée
+	glutPostRedisplay(); // la procedure d'affichage "display" est appelÃ©e
 	cout << " t = " << t << "       t_norm = " << t_norm << endl;
 	glutTimerFunc(dt, timer, 0); // rappeler la procedure timer dans dt millisecondes
 }
@@ -111,11 +111,11 @@ void saut(reel t, point& PO)
 	PO=PointsControle[i];
 }
 
-void inter_lin(reel t_norm, point&  PO, vecteur& VN) // à compléter
+void inter_lin(reel t_norm, point&  PO, vecteur& VN) // Ã  complÃ©ter
 {
 }
 
-void cat_rom(reel t_norm, point&  PO, vecteur& VN) // à compléter
+void cat_rom(reel t_norm, point&  PO, vecteur& VN) // Ã  complÃ©ter
 {
 	//Points
 	point prev;
@@ -173,7 +173,7 @@ void cat_rom(reel t_norm, point&  PO, vecteur& VN) // à compléter
 }
 
 
-void cat_rom_t(reel t_norm, point&  PO, vecteur& VN) // à compléter
+void cat_rom_t(reel t_norm, point&  PO, vecteur& VN) // Ã  complÃ©ter
 {
 }
 
@@ -349,7 +349,7 @@ void init(void)
 void menu(int value)
 {
 	mode = (enummode) value;
-	t_norm=0; // recommence l'animation au début
+	t_norm=0; // recommence l'animation au dÃ©but
 	t=0;
 }
 
