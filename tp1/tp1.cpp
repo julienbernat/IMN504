@@ -5,10 +5,10 @@
 /**********************  TP1 *************************************************/
 /*                                                                           */
 /*  NOM 1 :  Julien Bernat                                                   */
-/*  MATRICULE 1: 19096032	     					     */
+/*  MATRICULE 1: 19096032	     											 */
 /*                                                                           */
-/*  NOM 2 :                                                                  */
-/*  MATRICULE 2:                                                             */
+/*  NOM 2 :  Christopher Sicotte                                             */
+/*  MATRICULE 2: 19 051 810                                                  */
 /*                                                                           */
 /*****************************************************************************/
 
@@ -26,6 +26,10 @@ const int TEXDIM = 256;
 
 vector<point> PointsControle;
 
+float G_i[100];
+float V_i[100];
+vector<point> ptVects;
+reel length;
 
 GLfloat light_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};  /*  lumiere diffuse blanche. */
 GLfloat light_spec[] = {1.0f, 1.0f, 1.0f, 1.0f};     /*  lumiere speculaire blanche. */
@@ -101,9 +105,6 @@ bool LirePointsControle(char *filename)
 	return true;
 }
 
-void InitTable() // initialiser votre table G(u)
-{
-}
 
 void saut(reel t, point& PO)
 {
@@ -202,9 +203,179 @@ void cat_rom(reel t_norm, point&  PO, vecteur& VN) // à compléter
 
 }
 
-
-void cat_rom_t(reel t_norm, point&  PO, vecteur& VN) // à compléter
+void InitTable() // initialiser votre table G(u)
 {
+	point p1;
+
+	for (int j = 0; j <= GrandeurTable; j++)
+	{
+		//Points
+		point prev;
+		point PC0;
+		point PC1;
+		point PC2;
+		//Tangeantes
+		vecteur M0;
+		vecteur M1;
+
+		//Nombre de segment dans la courbe
+		int nbSeg = (PointsControle.size() - 1);
+		reel j_norm = reel(j) / reel(GrandeurTable);
+
+		//Numero du segment actuel
+		int i = floor(j_norm * nbSeg);
+		if (j_norm >= 1) {
+			i = floor(j_norm * nbSeg) - 1;
+		}
+
+		//Le temps ajuste de 0 a 1 pour chaque segment
+		reel t = (j_norm - (reel(i) / reel(nbSeg))) * reel(nbSeg);
+
+		if (i == 0) {
+			//Premier segment de la courbe
+			PC0 = PointsControle[i];
+			PC1 = PointsControle[i + 1];
+			PC2 = PointsControle[i + 2];
+
+			M0 = 0.5 * ((PC1 - (PC2 - PC1)) - PC0);
+			M1 = 0.5 * (PC2 - PC0);
+		}
+		else if (i == PointsControle.size() - 2) {
+			//Dernier segment de la courbe 
+			//Si le t est 1 on ne fait pas le calcul pour ne pas repeter le dernier/premier frame
+			if (t < 1) {
+				prev = PointsControle[i - 1];
+				PC0 = PointsControle[i];
+				PC1 = PointsControle[i + 1];
+				M0 = 0.5 * (PC1 - prev);
+				//Calcul de la derniere tangeante
+				M1 = 0.5 * (PC1 - (PC0 - (prev - PC0)));
+			}
+
+		}
+		else if (i != PointsControle.size()) {
+			//Cas normal
+			prev = PointsControle[i - 1];
+			PC0 = PointsControle[i];
+			PC1 = PointsControle[i + 1];
+			PC2 = PointsControle[i + 2];
+
+			M0 = 0.5 * (PC1 - prev);
+			M1 = 0.5 * (PC2 - PC0);
+		}
+
+		reel t3 = pow(t, 3);
+		reel t2 = pow(t, 2);
+
+		//Calcul du point voir page wiki Cubic Hermit spline 
+		point p = (2 * t3 - 3 * t2 + 1) * PC0 + (t3 - 2 * t2 + t) * M0 + (-2 * t3 + 3 * t2) * PC1 + (t3 - t2) * M1;
+
+		if (j == 0) {
+			V_i[j] = 0;
+			G_i[j] = 0;
+		}
+
+		else {
+			V_i[j] = j_norm;
+			G_i[j] = G_i[j-1] + sqrt(pow(p.x() - p1.x(), 2) + pow(p.y() - p1.y(), 2) + pow(p.z() - p1.z(), 2));
+		}
+
+		p1 = p;
+	}
+	for (int j = 0; j <= GrandeurTable; j++)
+	{
+		if (j == GrandeurTable) {
+			G_i[j] = 1;
+		}
+		else {
+			G_i[j] = G_i[j] / G_i[GrandeurTable];
+		}
+	}
+}
+
+void cat_rom_t(reel t_norm, point& PO, vecteur& VN) // à compléter
+{
+	G_i[GrandeurTable] = 1;
+
+	int index = floor(t_norm * reel(GrandeurTable));
+	reel w = (t_norm - V_i[index]) / (V_i[index + 1] - V_i[index]);
+
+	if (index == 0) {
+		w = (t_norm) / (V_i[index + 1]);
+	}
+
+	reel s = (1 - w)*(G_i[index]) + w * (G_i[index + 1]);
+
+	//Points
+	point prev;
+	point PC0;
+	point PC1;
+	point PC2;
+	//Tangeantes
+	vecteur M0;
+	vecteur M1;
+
+	//Nombre de segment dans la courbe
+	int nbSeg = (PointsControle.size() - 1);
+	//Numero du segment actuel
+	int i = s * nbSeg;
+
+	if (s >= 1) {
+		i = s * nbSeg - 1;
+	}
+
+	//Le temps ajuste de 0 a 1 pour chaque segment
+	reel t = (s - (reel(i) / reel(nbSeg))) * reel(nbSeg);
+	
+	if (t >= 1) {
+		return;
+	}
+
+	if (i == 0) {
+		//Premier segment de la courbe
+		PC0 = PointsControle[i];
+		PC1 = PointsControle[i + 1];
+		PC2 = PointsControle[i + 2];
+
+		M0 = 0.5 * ((PC1 - (PC2 - PC1)) - PC0);
+		M1 = 0.5 * (PC2 - PC0);
+	}
+	else if (i == PointsControle.size() - 2) {
+		//Dernier segment de la courbe 
+		//Si le t est 1 on ne fait pas le calcul pour ne pas repeter le dernier/premier frame
+		if (t < 1) {
+			prev = PointsControle[i - 1];
+			PC0 = PointsControle[i];
+			PC1 = PointsControle[i + 1];
+			M0 = 0.5 * (PC1 - prev);
+			//Calcul de la derniere tangeante
+			M1 = 0.5 * (PC1 - (PC0 - (prev - PC0)));
+		}
+
+	}
+	else if (i != PointsControle.size()) {
+		//Cas normal
+		prev = PointsControle[i - 1];
+		PC0 = PointsControle[i];
+		PC1 = PointsControle[i + 1];
+		PC2 = PointsControle[i + 2];
+
+		M0 = 0.5 * (PC1 - prev);
+		M1 = 0.5 * (PC2 - PC0);
+	}
+
+	reel t3 = pow(t, 3);
+	reel t2 = pow(t, 2);
+
+	//Calcul du point voir page wiki Cubic Hermit spline 
+	PO = (2 * t3 - 3 * t2 + 1) * PC0 + (t3 - 2 * t2 + t) * M0 + (-2 * t3 + 3 * t2) * PC1 + (t3 - t2) * M1;
+
+	//Calcul des derive pour la direction de regard de la camera
+	reel x = (6 * t2 - 6 * t) * PC0.x() + (3 * t2 - 4 * t + 1) * M0.x() + (-6 * t2 + 6 * t) * PC1.x() + (3 * t2 - 2 * t) * M1.x();
+	reel y = (6 * t2 - 6 * t) * PC0.y() + (3 * t2 - 4 * t + 1) * M0.y() + (-6 * t2 + 6 * t) * PC1.y() + (3 * t2 - 2 * t) * M1.y();
+	reel z = (6 * t2 - 6 * t) * PC0.z() + (3 * t2 - 4 * t + 1) * M0.z() + (-6 * t2 + 6 * t) * PC1.z() + (3 * t2 - 2 * t) * M1.z();
+
+	VN = vecteur(x, y, z);
 }
 
 void display(void)
@@ -385,7 +556,6 @@ void menu(int value)
 
 int main(int argc, char **argv){
   
-
   glutInit(&argc, argv);
   glutInitWindowSize(800, 800);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
