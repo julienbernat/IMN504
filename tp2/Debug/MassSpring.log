@@ -1,0 +1,14 @@
+﻿cl : command line warning D9035: option 'Gm' has been deprecated and will be removed in a future release
+  stdafx.cpp
+cl : command line warning D9035: option 'Gm' has been deprecated and will be removed in a future release
+  utilreel.cpp
+  utilalg.cpp
+  triangle.cpp
+  ressort.cpp
+  reseau.cpp
+  masse.cpp
+  main.cpp
+  definition.cpp
+  alg.cpp
+  Generating Code...
+  MassSpring.vcxproj -> F:\IMN504-Animation\tp2\Debug\MassSpring.exe
